@@ -28,87 +28,85 @@ Page({
     this.loadStats();
   },
 
-  onDateChange(e) { this.setData({ matchDate: e.detail.value }); },
+  onDateChange(e) {
+    this.setData({ matchDate: e.detail.value });
+  },
+
   onCategoryChange(e) {
     const categoryIndex = Number(e.detail.value);
     const category = this.data.categoryList[categoryIndex];
     this.setData({ categoryIndex, detailList: ERROR_LIBRARY[category], detailIndex: 0 });
   },
-  onDetailChange(e) { this.setData({ detailIndex: Number(e.detail.value) }); },
-  onPhaseChange(e) { this.setData({ phaseIndex: Number(e.detail.value) }); },
-  onNoteInput(e) { this.setData({ note: e.detail.value }); },
+
+  onDetailChange(e) {
+    this.setData({ detailIndex: Number(e.detail.value) });
+  },
+
+  onPhaseChange(e) {
+    this.setData({ phaseIndex: Number(e.detail.value) });
+  },
+
+  onNoteInput(e) {
+    this.setData({ note: e.detail.value });
+  },
 
   submitRecord() {
-  const payload = {
-    matchTime: `${this.data.matchDate}T12:00`,
-    category: this.data.categoryList[this.data.categoryIndex],
-    detail: this.data.detailList[this.data.detailIndex],
-    phase: this.data.phaseList[this.data.phaseIndex],
-    note: this.data.note,
-    createdAt: new Date()
-  };
+    const payload = {
+      matchTime: `${this.data.matchDate}T12:00`,
+      category: this.data.categoryList[this.data.categoryIndex],
+      detail: this.data.detailList[this.data.detailIndex],
+      phase: this.data.phaseList[this.data.phaseIndex],
+      note: this.data.note,
+      createdAt: new Date()
+    };
 
-  db.collection('records').add({
-    data: payload,
-    success: () => {
-      wx.showToast({ title: '已保存' });
-      this.setData({ note: '' });
-      this.loadStats();
-    },
-    fail: () => wx.showToast({ title: '保存失败', icon: 'none' })
-  });
-},
-
-
-    wx.request({
-      url: `${API_BASE}/api/records`,
-      method: 'POST',
+    db.collection('records').add({
       data: payload,
       success: () => {
         wx.showToast({ title: '已保存' });
         this.setData({ note: '' });
         this.loadStats();
       },
-      fail: () => wx.showToast({ title: '保存失败', icon: 'none' })
+      fail: () => {
+        wx.showToast({ title: '保存失败', icon: 'none' });
+      }
     });
   },
 
   loadStats() {
-  db.collection('records').get({
-    success: (res) => {
-      const list = res.data || [];
-      const total = list.length;
+    db.collection('records').get({
+      success: (res) => {
+        const list = res.data || [];
+        const total = list.length;
+        const byCategory = {};
+        const byDetail = {};
 
-      const byCategory = {};
-      const byDetail = {};
+        list.forEach((item) => {
+          byCategory[item.category] = (byCategory[item.category] || 0) + 1;
+          byDetail[item.detail] = (byDetail[item.detail] || 0) + 1;
+        });
 
-      list.forEach((item) => {
-        byCategory[item.category] = (byCategory[item.category] || 0) + 1;
-        byDetail[item.detail] = (byDetail[item.detail] || 0) + 1;
-      });
+        const topCategory = this.maxEntry(byCategory);
+        const topDetail = this.maxEntry(byDetail);
 
-      const maxEntry = (obj) => {
-        const entries = Object.entries(obj);
-        if (!entries.length) return ['暂无', 0];
-        entries.sort((a, b) => b[1] - a[1]);
-        return entries[0];
-      };
+        this.setData({
+          stats: {
+            total,
+            topCategory: { name: topCategory[0], count: topCategory[1] },
+            topDetail: { name: topDetail[0], count: topDetail[1] }
+          }
+        });
+      },
+      fail: () => {
+        wx.showToast({ title: '读取统计失败', icon: 'none' });
+      }
+    });
+  },
 
-      const topCategory = maxEntry(byCategory);
-      const topDetail = maxEntry(byDetail);
-
-      this.setData({
-        stats: {
-          total,
-          topCategory: { name: topCategory[0], count: topCategory[1] },
-          topDetail: { name: topDetail[0], count: topDetail[1] }
-        }
-      });
-    },
-    fail: () => {
-      wx.showToast({ title: '读取统计失败', icon: 'none' });
-    }
-  });
-}
-
+  maxEntry(map) {
+    const entries = Object.entries(map);
+    if (!entries.length) return ['暂无', 0];
+    entries.sort((a, b) => b[1] - a[1]);
+    return entries[0];
+  }
 });
