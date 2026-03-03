@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>乒乓球失误记录器</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>乒乓球失误记录器（v1）</h1>
+        <p>用于比赛后快速记录时间与失误类型，并生成基础数据分析。</p>
+        <p id="mode-hint" class="mode-hint"></p>
+      </header>
+
+      <section class="card">
+        <h2>新增记录</h2>
+        <form id="record-form">
+          <label for="match-time">比赛时间</label>
+          <input type="datetime-local" id="match-time" name="match-time" required />
+
+          <label for="category">失误大类</label>
+          <select id="category" name="category" required></select>
+
+          <label for="detail">失误细分（可针对性改进）</label>
+          <select id="detail" name="detail" required></select>
+
+          <label for="phase">回合阶段</label>
+          <select id="phase" name="phase" required>
+            <option value="发球轮">发球轮</option>
+            <option value="接发球轮">接发球轮</option>
+            <option value="相持前3板">相持前3板</option>
+            <option value="中远台相持">中远台相持</option>
+          </select>
+
+          <label for="note">补充说明（可选）</label>
+          <textarea id="note" name="note" rows="3" placeholder="例如：对手发中路急长下旋，脚下没到位"></textarea>
+
+          <button type="submit">保存记录</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>数据分析</h2>
+        <div id="stats" class="stats-grid"></div>
+      </section>
+
+      <section class="card">
+        <div class="row-between">
+          <h2>记录明细</h2>
+          <button id="clear-btn" class="secondary" type="button">清空全部</button>
+        </div>
+        <ul id="record-list" class="record-list"></ul>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
