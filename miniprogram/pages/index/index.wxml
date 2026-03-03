@@ -1,0 +1,30 @@
+<view class="container">
+  <view class="card">
+    <view class="title">新增记录</view>
+    <picker mode="date" value="{{matchDate}}" bindchange="onDateChange">
+      <view class="picker">比赛日期：{{matchDate}}</view>
+    </picker>
+
+    <picker mode="selector" range="{{categoryList}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+      <view class="picker">失误大类：{{categoryList[categoryIndex]}}</view>
+    </picker>
+
+    <picker mode="selector" range="{{detailList}}" value="{{detailIndex}}" bindchange="onDetailChange">
+      <view class="picker">细分失误：{{detailList[detailIndex]}}</view>
+    </picker>
+
+    <picker mode="selector" range="{{phaseList}}" value="{{phaseIndex}}" bindchange="onPhaseChange">
+      <view class="picker">回合阶段：{{phaseList[phaseIndex]}}</view>
+    </picker>
+
+    <textarea class="note" placeholder="备注（可选）" bindinput="onNoteInput" value="{{note}}"></textarea>
+    <button type="primary" bindtap="submitRecord">保存记录</button>
+  </view>
+
+  <view class="card">
+    <view class="title">统计</view>
+    <view>总记录：{{stats.total}}</view>
+    <view>高频大类：{{stats.topCategory.name}}（{{stats.topCategory.count}}次）</view>
+    <view>高频细分：{{stats.topDetail.name}}（{{stats.topDetail.count}}次）</view>
+  </view>
+</view>

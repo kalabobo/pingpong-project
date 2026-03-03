@@ -1,0 +1,11 @@
+{
+  "pages": ["pages/index/index"],
+  "window": {
+    "navigationBarTitleText": "乒乓球失误记录",
+    "navigationBarBackgroundColor": "#2d6cdf",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f4f6fb"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
