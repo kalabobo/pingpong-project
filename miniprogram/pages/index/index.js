@@ -1,4 +1,4 @@
-const { API_BASE } = require('../../config');
+const db = wx.cloud.database();
 
 const ERROR_LIBRARY = {
   技术动作质量: [
@@ -39,13 +39,26 @@ Page({
   onNoteInput(e) { this.setData({ note: e.detail.value }); },
 
   submitRecord() {
-    const payload = {
-      matchTime: `${this.data.matchDate}T12:00`,
-      category: this.data.categoryList[this.data.categoryIndex],
-      detail: this.data.detailList[this.data.detailIndex],
-      phase: this.data.phaseList[this.data.phaseIndex],
-      note: this.data.note
-    };
+  const payload = {
+    matchTime: `${this.data.matchDate}T12:00`,
+    category: this.data.categoryList[this.data.categoryIndex],
+    detail: this.data.detailList[this.data.detailIndex],
+    phase: this.data.phaseList[this.data.phaseIndex],
+    note: this.data.note,
+    createdAt: new Date()
+  };
+
+  db.collection('records').add({
+    data: payload,
+    success: () => {
+      wx.showToast({ title: '已保存' });
+      this.setData({ note: '' });
+      this.loadStats();
+    },
+    fail: () => wx.showToast({ title: '保存失败', icon: 'none' })
+  });
+},
+
 
     wx.request({
       url: `${API_BASE}/api/records`,
@@ -61,12 +74,41 @@ Page({
   },
 
   loadStats() {
-    wx.request({
-      url: `${API_BASE}/api/stats`,
-      method: 'GET',
-      success: (res) => {
-        this.setData({ stats: res.data });
-      }
-    });
-  }
+  db.collection('records').get({
+    success: (res) => {
+      const list = res.data || [];
+      const total = list.length;
+
+      const byCategory = {};
+      const byDetail = {};
+
+      list.forEach((item) => {
+        byCategory[item.category] = (byCategory[item.category] || 0) + 1;
+        byDetail[item.detail] = (byDetail[item.detail] || 0) + 1;
+      });
+
+      const maxEntry = (obj) => {
+        const entries = Object.entries(obj);
+        if (!entries.length) return ['暂无', 0];
+        entries.sort((a, b) => b[1] - a[1]);
+        return entries[0];
+      };
+
+      const topCategory = maxEntry(byCategory);
+      const topDetail = maxEntry(byDetail);
+
+      this.setData({
+        stats: {
+          total,
+          topCategory: { name: topCategory[0], count: topCategory[1] },
+          topDetail: { name: topDetail[0], count: topDetail[1] }
+        }
+      });
+    },
+    fail: () => {
+      wx.showToast({ title: '读取统计失败', icon: 'none' });
+    }
+  });
+}
+
 });
